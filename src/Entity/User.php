@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Dto\UserDto;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -111,5 +112,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->balance = $balance;
 
         return $this;
+    }
+
+    public static function fromDTO(UserDto $dto): self
+    {
+        $user = new self();
+
+        $user->setEmail($dto->getUsername());
+        $user->setRoles($dto->getRoles());
+        $user->setPassword($dto->getPassword());
+        $user->setBalance($dto->getBalance());
+
+        return $user;
     }
 }
