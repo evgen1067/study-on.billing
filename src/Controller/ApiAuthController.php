@@ -10,6 +10,7 @@ use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -37,7 +38,7 @@ class ApiAuthController extends AbstractController
     }
 
     #[Route('/auth', name: 'api_auth', methods: ['POST'])]
-    public function auth(): Response
+    public function auth(): JsonResponse
     {
         // get jwt token
     }
@@ -48,7 +49,7 @@ class ApiAuthController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         JWTTokenManagerInterface $JWTTokenManager,
-    ): Response
+    ): JsonResponse
     {
         $userDto = $this->serializer->deserialize($request->getContent(), UserDto::class, 'json');
 

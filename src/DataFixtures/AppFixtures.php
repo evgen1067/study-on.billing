@@ -25,7 +25,7 @@ class AppFixtures extends Fixture
         $user
             ->setEmail('user@study-on.ru')
             ->setPassword($password)
-            ->setBalance(1000.0);
+            ->setBalance(5000.0);
 
         $admin = new User();
         $password = $this->userPasswordHasher->hashPassword(
