@@ -119,9 +119,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $user = new self();
 
         $user->setEmail($dto->getUsername());
-        $user->setRoles($dto->getRoles());
         $user->setPassword($dto->getPassword());
-        $user->setBalance($dto->getBalance());
+        $user->setBalance(5000);
 
         return $user;
     }
