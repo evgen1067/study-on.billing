@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,12 +38,167 @@ class ApiAuthController extends AbstractController
         $this->userPasswordHasher = $userPasswordHasher;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth",
+     *     summary="Authorization of a user with a jwt token",
+     *     description="Authorization of a user with a jwt token"
+     * )
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="username",
+     *          type="string",
+     *          description="User name",
+     *          example="user@study-on.ru",
+     *        ),
+     *        @OA\Property(
+     *          property="password",
+     *          type="string",
+     *          description="Password",
+     *          example="password",
+     *        ),
+     *     )
+     *  )
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="Returns JWT token",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="token",
+     *          type="string",
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Authorization error",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *          example="401"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *          example="Invalid credentials."
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response="default",
+     *     description="Unexpected error",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string"
+     *        ),
+     *     )
+     * )
+     * @OA\Tag(name="User")
+     */
     #[Route('/auth', name: 'api_auth', methods: ['POST'])]
     public function auth(): JsonResponse
     {
         // get jwt token
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/register",
+     *     summary="User Registration",
+     *     description="User Registration"
+     * )
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="username",
+     *          type="string",
+     *          description="User name",
+     *          example="user@study-on.ru",
+     *        ),
+     *        @OA\Property(
+     *          property="password",
+     *          type="string",
+     *          description="Password",
+     *          example="password",
+     *        ),
+     *     )
+     *  )
+     * )
+     * @OA\Response(
+     *     response=201,
+     *     description="Successful registration",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="roles",
+     *          type="array",
+     *          @OA\Items(
+     *              type="string",
+     *          ),
+     *        ),
+     *     ),
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Validation error",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="errors",
+     *          type="array",
+     *          @OA\Items(
+     *              @OA\Property(
+     *                  type="string",
+     *                  property="property"
+     *              )
+     *          )
+     *        )
+     *     )
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="Email is already in use",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *          example="403",
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *          example="Email is already in use.",
+     *        ),
+     *     ),
+     * )
+     * @OA\Response(
+     *     response="default",
+     *     description="Unexpected error",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *        ),
+     *     ),
+     * )
+     * @OA\Tag(name="User")
+     */
     #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(
         Request $request,
