@@ -13,8 +13,8 @@ class UserDto
     public ?string $username;
 
     #[Serializer\Type('string')]
-    #[Assert\NotBlank(message: 'The password field can\'t be blank')]
     #[Assert\Length(min: 6, minMessage: 'The password must be at least {{ limit }} characters.')]
+    #[Assert\NotBlank(message: 'The password field can\'t be blank.')]
     public ?string $password;
 
     public function getUsername(): string

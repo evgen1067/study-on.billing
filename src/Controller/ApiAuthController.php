@@ -240,8 +240,6 @@ class ApiAuthController extends AbstractController
             'roles' => $user->getRoles(),
         ];
 
-        return $this->json([
-            $data
-        ], Response::HTTP_CREATED);
+        return $this->json($data,Response::HTTP_CREATED);
     }
 }
