@@ -6,6 +6,8 @@ use App\Dto\UserDto;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -68,6 +70,10 @@ class ApiAuthController extends AbstractController
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="refresh_token",
      *          type="string",
      *        ),
      *     )
@@ -205,6 +211,8 @@ class ApiAuthController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         JWTTokenManagerInterface $JWTTokenManager,
+        RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        RefreshTokenManagerInterface $refreshTokenManager
     ): JsonResponse
     {
         $userDto = $this->serializer->deserialize($request->getContent(), UserDto::class, 'json');
@@ -218,12 +226,14 @@ class ApiAuthController extends AbstractController
             }
             return $this->json([
                 'errors' => $jsonErrors,
+                'code' => Response::HTTP_BAD_REQUEST,
             ], Response::HTTP_BAD_REQUEST);
         }
 
         if ($userRepository->findOneBy(['email' => $userDto->getUsername()])) {
             return $this->json([
-                'error' => 'Email is already in use.',
+                'message' => 'Email уже используется.',
+                'code' => Response::HTTP_FORBIDDEN
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -235,8 +245,15 @@ class ApiAuthController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
+        $refreshToken = $refreshTokenGenerator->createForUserWithTtl(
+            $user,
+            (new \DateTime())->modify('+1 month')->getTimestamp()
+        );
+        $refreshTokenManager->save($refreshToken);
+
         $data = [
             'token' => $JWTTokenManager->create($user),
+            'refresh_token' => $refreshToken->getRefreshToken(),
             'roles' => $user->getRoles(),
         ];
 
