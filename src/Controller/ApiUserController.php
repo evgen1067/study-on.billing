@@ -2,13 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 
@@ -19,12 +18,12 @@ class ApiUserController extends AbstractController
     /**
      * @OA\Get(
      *     path="/api/v1/users/current",
-     *     summary="Information about the current user",
-     *     description="Information about the current user"
+     *     summary="Получение текущего пользователя",
+     *     description="Получение текущего пользователя"
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Returns information about current user",
+     *     description="Возвращает информацию по текущему пользователю",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="username",
@@ -46,7 +45,7 @@ class ApiUserController extends AbstractController
      * )
      * @OA\Response(
      *     response=401,
-     *     description="There is no current authorized user",
+     *     description="Нет текущего авторизованного пользователя",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="code",
@@ -60,7 +59,7 @@ class ApiUserController extends AbstractController
      * )
      * @OA\Response(
      *     response="default",
-     *     description="Unexpected error",
+     *     description="Неизвестная ошибка",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="code",
@@ -72,10 +71,10 @@ class ApiUserController extends AbstractController
      *        ),
      *     )
      * )
-     * @OA\Tag(name="User")
+     * @OA\Tag(name="Пользователь")
      * @Security(name="Bearer")
      */
-    public function current(UserRepository $userRepository): JsonResponse
+    public function current(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $user = $this->getUser();
 
@@ -88,10 +87,15 @@ class ApiUserController extends AbstractController
 
         $user = $userRepository->findOneBy(['email' => $user->getUserIdentifier()]);
 
-        return $this->json([
+        $data = [
             'username' => $user->getEmail(),
             'roles' => $user->getRoles(),
             'balance' => $user->getBalance(),
-        ], Response::HTTP_OK);
+        ];
+        $response = new JsonResponse();
+        $data = $serializer->serialize($data, 'json');
+        $response->setContent($data);
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
     }
 }

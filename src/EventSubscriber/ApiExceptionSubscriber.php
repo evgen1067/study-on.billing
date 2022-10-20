@@ -25,7 +25,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
         }
 
         $data = [
-            'status_code' => $statusCode,
+            'code' => $statusCode,
             'message' => $exception->getMessage(),
         ];
 

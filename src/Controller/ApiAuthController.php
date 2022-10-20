@@ -43,8 +43,8 @@ class ApiAuthController extends AbstractController
     /**
      * @OA\Post(
      *     path="/api/v1/auth",
-     *     summary="Authorization of a user with a jwt token",
-     *     description="Authorization of a user with a jwt token"
+     *     summary="Авторизация пользователя",
+     *     description="Авторизация пользователя"
      * )
      * @OA\RequestBody(
      *     required=true,
@@ -52,13 +52,11 @@ class ApiAuthController extends AbstractController
      *        @OA\Property(
      *          property="username",
      *          type="string",
-     *          description="User name",
      *          example="user@study-on.ru",
      *        ),
      *        @OA\Property(
      *          property="password",
      *          type="string",
-     *          description="Password",
      *          example="password",
      *        ),
      *     )
@@ -66,7 +64,7 @@ class ApiAuthController extends AbstractController
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Returns JWT token",
+     *     description="Возвращает JWT-токен и Refresh-токен пользователя",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="token",
@@ -80,7 +78,7 @@ class ApiAuthController extends AbstractController
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Authorization error",
+     *     description="Ошибка авторизации",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="code",
@@ -96,7 +94,7 @@ class ApiAuthController extends AbstractController
      * )
      * @OA\Response(
      *     response="default",
-     *     description="Unexpected error",
+     *     description="Неизвестная ошибка",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="code",
@@ -108,7 +106,7 @@ class ApiAuthController extends AbstractController
      *        ),
      *     )
      * )
-     * @OA\Tag(name="User")
+     * @OA\Tag(name="Пользователь")
      */
     #[Route('/auth', name: 'api_auth', methods: ['POST'])]
     public function auth(): JsonResponse
@@ -119,8 +117,8 @@ class ApiAuthController extends AbstractController
     /**
      * @OA\Post(
      *     path="/api/v1/register",
-     *     summary="User Registration",
-     *     description="User Registration"
+     *     summary="Регистрация пользователя",
+     *     description="Регистрация пользователя"
      * )
      * @OA\RequestBody(
      *     required=true,
@@ -142,10 +140,14 @@ class ApiAuthController extends AbstractController
      * )
      * @OA\Response(
      *     response=201,
-     *     description="Successful registration",
+     *     description="Успешная регистрация",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="refresh_token",
      *          type="string",
      *        ),
      *        @OA\Property(
@@ -159,7 +161,7 @@ class ApiAuthController extends AbstractController
      * )
      * @OA\Response(
      *     response=400,
-     *     description="Validation error",
+     *     description="Ошибка валидации",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="errors",
@@ -175,7 +177,7 @@ class ApiAuthController extends AbstractController
      * )
      * @OA\Response(
      *     response=403,
-     *     description="Email is already in use",
+     *     description="Email уже используется",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="code",
@@ -185,13 +187,13 @@ class ApiAuthController extends AbstractController
      *        @OA\Property(
      *          property="message",
      *          type="string",
-     *          example="Email is already in use.",
+     *          example="Email уже используется.",
      *        ),
      *     ),
      * )
      * @OA\Response(
      *     response="default",
-     *     description="Unexpected error",
+     *     description="Неизвестная ошибка",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="code",
@@ -203,7 +205,7 @@ class ApiAuthController extends AbstractController
      *        ),
      *     ),
      * )
-     * @OA\Tag(name="User")
+     * @OA\Tag(name="Пользователь")
      */
     #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(
@@ -242,8 +244,8 @@ class ApiAuthController extends AbstractController
             $user,
             $user->getPassword()
         ));
-        $entityManager->persist($user);
-        $entityManager->flush();
+
+        $userRepository->save($user, true);
 
         $refreshToken = $refreshTokenGenerator->createForUserWithTtl(
             $user,
@@ -257,6 +259,11 @@ class ApiAuthController extends AbstractController
             'roles' => $user->getRoles(),
         ];
 
-        return $this->json($data,Response::HTTP_CREATED);
+        $response = new JsonResponse();
+
+        $response->setContent($this->serializer->serialize($data, 'json'));
+        $response->setStatusCode(Response::HTTP_CREATED);
+
+        return $response;
     }
 }

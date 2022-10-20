@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Dto\UserDto;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -16,10 +18,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $id;
 
     #[ORM\Column(length: 180, unique: true)]
-    private ?string $email = null;
+    private ?string $email;
 
     #[ORM\Column]
     private array $roles = [];
@@ -28,10 +30,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string|null The hashed password
      */
     #[ORM\Column]
-    private ?string $password = null;
+    private ?string $password;
 
     #[ORM\Column]
-    private ?float $balance = null;
+    private ?float $balance;
+
+    #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Transaction::class, orphanRemoval: true)]
+    private Collection $transactions;
+
+    public function __construct()
+    {
+        $this->transactions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -124,5 +134,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $user->setBalance(5000);
 
         return $user;
+    }
+
+    /**
+     * @return Collection<int, Transaction>
+     */
+    public function getTransactions(): Collection
+    {
+        return $this->transactions;
+    }
+
+    public function addTransaction(Transaction $transaction): self
+    {
+        if (!$this->transactions->contains($transaction)) {
+            $this->transactions->add($transaction);
+            $transaction->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): self
+    {
+        if ($this->transactions->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getCustomer() === $this) {
+                $transaction->setCustomer(null);
+            }
+        }
+
+        return $this;
     }
 }

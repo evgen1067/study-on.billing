@@ -2,7 +2,7 @@
 
 namespace App\Tests\Api;
 
-use App\DataFixtures\AppFixtures;
+use App\DataFixtures\UserFixtures;
 use App\Tests\AbstractTest;
 use JMS\Serializer\Serializer;
 use JsonException;
@@ -24,7 +24,7 @@ class ApiAuthTest extends AbstractTest
 
     protected function getFixtures(): array
     {
-        return [AppFixtures::class];
+        return [UserFixtures::class];
     }
 
     /**
