@@ -19,12 +19,14 @@ class CourseDto
     #[Serializer\Type("string")]
     private string $title;
 
-    public function __construct(Course $course)
+    public function __construct(Course|null $course)
     {
-        $this->code = $course->getCode();
-        $this->price = $course->getPrice();
-        $this->type = $course->getType();
-        $this->title = $course->getTitle();
+        if (!is_null($course)) {
+            $this->code = $course->getCode();
+            $this->price = $course->getPrice();
+            $this->type = $course->getType();
+            $this->title = $course->getTitle();
+        }
     }
 
     public function getTitle(): string

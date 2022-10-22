@@ -3,10 +3,14 @@
 namespace App\Tests\Api;
 
 use App\DataFixtures\UserFixtures;
+use App\Service\PaymentService;
 use App\Tests\AbstractTest;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use JMS\Serializer\Serializer;
 use JsonException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class ApiAuthTest extends AbstractTest
 {
@@ -24,10 +28,17 @@ class ApiAuthTest extends AbstractTest
 
     protected function getFixtures(): array
     {
-        return [UserFixtures::class];
+        return [
+            new UserFixtures(
+                self::getContainer()->get(UserPasswordHasherInterface::class),
+                self::getContainer()->get(RefreshTokenGeneratorInterface::class),
+                self::getContainer()->get(RefreshTokenManagerInterface::class),
+                self::getContainer()->get(PaymentService::class),
+            )];
     }
 
     /**
+     * @return void
      * @throws JsonException
      */
     public function testAuthorizationWithValidCredentials(): void
@@ -47,7 +58,7 @@ class ApiAuthTest extends AbstractTest
             $this->serializer->serialize($user, 'json')
         );
 
-        $this->assertResponseCode(Response::HTTP_OK, $client->getResponse());
+        $this->assertResponseOk();
 
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
@@ -57,9 +68,11 @@ class ApiAuthTest extends AbstractTest
         $data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertNotEmpty($data['token']);
+        self::assertNotEmpty($data['refresh_token']);
     }
 
     /**
+     * @return void
      * @throws JsonException
      */
     public function testAuthorizationWithInvalidCredentials(): void
@@ -93,6 +106,7 @@ class ApiAuthTest extends AbstractTest
     }
 
     /**
+     * @return void
      * @throws JsonException
      */
     public function testRegisterSuccessful(): void
@@ -122,6 +136,7 @@ class ApiAuthTest extends AbstractTest
         $data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertNotEmpty($data['token']);
+        self::assertNotEmpty($data['refresh_token']);
         self::assertNotEmpty($data['roles']);
 
 
@@ -129,6 +144,7 @@ class ApiAuthTest extends AbstractTest
     }
 
     /**
+     * @return void
      * @throws JsonException
      */
     public function testRegisterWithTooShortPasswordAndNotValidEmail(): void
@@ -161,6 +177,7 @@ class ApiAuthTest extends AbstractTest
     }
 
     /**
+     * @return void
      * @throws JsonException
      */
     public function testRegisterWithBlankValues(): void
@@ -193,6 +210,7 @@ class ApiAuthTest extends AbstractTest
     }
 
     /**
+     * @return void
      * @throws JsonException
      */
     public function testRegisterWithAlreadyUsedEmail(): void
@@ -216,9 +234,8 @@ class ApiAuthTest extends AbstractTest
 
         $errors = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertNotEmpty($errors['error']);
+        self::assertNotEmpty($errors['message']);
 
-        self::assertEquals('Email is already in use.', $errors['error']);
+        self::assertEquals('Email уже используется.', $errors['message']);
     }
-
 }

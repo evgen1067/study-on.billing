@@ -27,8 +27,7 @@ class UserFixtures extends Fixture implements OrderedFixtureInterface
         RefreshTokenGeneratorInterface $refreshTokenGenerator,
         RefreshTokenManagerInterface $refreshTokenManager,
         PaymentService $paymentService
-    )
-    {
+    ) {
         $this->userPasswordHashed = $userPasswordHashed;
         $this->refreshTokenGenerator = $refreshTokenGenerator;
         $this->refreshTokenManager = $refreshTokenManager;

@@ -39,14 +39,14 @@ class TransactionFixtures extends Fixture implements OrderedFixtureInterface
             ],
             // buy
             [
-                'type' => 3,
+                'type' => 1,
                 'amount' => $boughtCourses[0]->getPrice(),
                 'course' => $boughtCourses[0],
                 'customer' => $user,
                 'created' => new DateTimeImmutable('2022-10-08 00:00:00'),
             ],
             [
-                'type' => 3,
+                'type' => 1,
                 'amount' => $boughtCourses[1]->getPrice(),
                 'course' => $boughtCourses[1],
                 'customer' => $admin,

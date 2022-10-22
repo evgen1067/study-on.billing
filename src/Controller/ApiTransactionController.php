@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('api/v1/transactions')]
-class TransactionController extends AbstractController
+class ApiTransactionController extends AbstractController
 {
     private const OPERATION_TYPE = [
         'payment' => 1,
@@ -101,8 +101,8 @@ class TransactionController extends AbstractController
     public function index(
         Request $request,
         TransactionRepository $transactionRepository,
-        SerializerInterface $serializer): JsonResponse
-    {
+        SerializerInterface $serializer
+    ): JsonResponse {
         $filters = [];
         # тип транзакции payment|deposit
         $filters['type'] = $request->query->get('type') ? self::OPERATION_TYPE[$request->query->get('type')] : null;

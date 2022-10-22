@@ -18,9 +18,6 @@ migration:
 migrate:
 	@${CONSOLE} doctrine:migrations:migrate
 
-entity:
-	@${CONSOLE} make:entity
-
 fixtload:
 	@${CONSOLE} doctrine:fixtures:load
 

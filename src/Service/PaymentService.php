@@ -59,7 +59,7 @@ class PaymentService
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if ($user->getBalance() < $course->getPrice()) {
-                throw new \RuntimeException( 'На счету недостаточно средств.', Response::HTTP_NOT_ACCEPTABLE);
+                throw new \RuntimeException('На счету недостаточно средств.', Response::HTTP_NOT_ACCEPTABLE);
             }
             $transaction = new Transaction();
 

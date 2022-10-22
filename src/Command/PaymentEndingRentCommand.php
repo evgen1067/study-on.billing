@@ -24,12 +24,12 @@ class PaymentEndingRentCommand extends Command
     private MailerInterface $mailer;
 
     public function __construct(
-        Twig                  $twig,
+        Twig $twig,
         TransactionRepository $transactionRepository,
         UserRepository $userRepository,
-        MailerInterface       $mailer,
-        string                $name = null)
-    {
+        MailerInterface $mailer,
+        string $name = null
+    ) {
         $this->twig = $twig;
         $this->transactionRepository = $transactionRepository;
         $this->userRepository = $userRepository;
@@ -37,7 +37,7 @@ class PaymentEndingRentCommand extends Command
         parent::__construct($name);
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $users = $this->userRepository->findAll();
 
@@ -64,7 +64,9 @@ class PaymentEndingRentCommand extends Command
                     $output->writeln('Отчет успешно отправлен пользователю ' . $user->getEmail() . '!');
                 } catch (TransportExceptionInterface $e) {
                     $output->writeln($e->getMessage());
-                    $output->writeln('Ошибка при формировании и отправке отчета пользователю ' . $user->getEmail() . '.');
+                    $output->writeln(
+                        'Ошибка при формировании и отправке отчета пользователю ' . $user->getEmail() . '.'
+                    );
 
                     return Command::FAILURE;
                 }

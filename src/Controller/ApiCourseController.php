@@ -2,26 +2,23 @@
 
 namespace App\Controller;
 
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
 use App\Dto\CourseDto;
 use App\Dto\PayDto;
 use App\Entity\Course;
 use App\Entity\User;
 use App\Repository\CourseRepository;
 use App\Service\PaymentService;
-use Doctrine\ORM\EntityManagerInterface;
-use JMS\Serializer\Serializer;
-use JMS\Serializer\SerializerBuilder;
 use JMS\Serializer\SerializerInterface;
-use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Nelmio\ApiDocBundle\Annotation\Security;
 
 #[Route('api/v1/courses')]
-class CourseController extends AbstractController
+class ApiCourseController extends AbstractController
 {
     #[Route('', name: 'app_courses', methods: ['GET'])]
     /**
@@ -158,8 +155,11 @@ class CourseController extends AbstractController
      * )
      * @OA\Tag(name="Курс")
      */
-    public function show(string $code, CourseRepository $courseRepository, SerializerInterface $serializer): JsonResponse
-    {
+    public function show(
+        string $code,
+        CourseRepository $courseRepository,
+        SerializerInterface $serializer
+    ): JsonResponse {
         $course = $courseRepository->findOneBy(['code' => $code]);
 
         $response = new JsonResponse();
@@ -167,7 +167,7 @@ class CourseController extends AbstractController
             'code' => Response::HTTP_NOT_FOUND,
             'message' => 'Курс с кодом «' . $code . '» не найден.',
         ];
-        if(!is_null($course)) {
+        if (!is_null($course)) {
             $response->setStatusCode(Response::HTTP_OK);
             $dto = new CourseDto($course);
             $content = $serializer->serialize($dto, 'json');
@@ -240,6 +240,22 @@ class CourseController extends AbstractController
      *     )
      * )
      * @OA\Response(
+     *     response="401",
+     *     description="Пользователь не авторизован",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *          example="401"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *          example="Вы не авторизованы!"
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
      *     response="default",
      *     description="Неизвестная ошибка",
      *     @OA\JsonContent(
@@ -260,8 +276,8 @@ class CourseController extends AbstractController
         string $code,
         CourseRepository $courseRepository,
         PaymentService $paymentService,
-        SerializerInterface $serializer): JsonResponse
-    {
+        SerializerInterface $serializer
+    ): JsonResponse {
         $course = $courseRepository->findOneBy(['code' => $code]);
 
         $response = new JsonResponse();
@@ -270,26 +286,34 @@ class CourseController extends AbstractController
             'code' => Response::HTTP_NOT_FOUND,
             'message' => 'Курс с кодом «' . $code . '» не найден.',
         ];
-        if(is_null($course)) {
+        if (is_null($course)) {
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
         }
         /**
          * @var User $user
          */
         $user = $this->getUser();
-        try {
-            $transaction = $paymentService->payment($user, $course);
-            $expires = $transaction->getExpires();
-            $response->setStatusCode(Response::HTTP_OK);
-            $content = new PayDto(true, $course->getType(), $expires ?: null);
-        } catch (\Exception $exception) {
-            $response->setStatusCode($exception->getCode());
-            $content = [
-                'code' => $exception->getCode(),
-                'message' => $exception->getMessage(),
-            ];
-        }
 
+        if (!$user) {
+            $response->setStatusCode(Response::HTTP_UNAUTHORIZED);
+            $content = [
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'Вы не авторизованы!',
+            ];
+        } else {
+            try {
+                $transaction = $paymentService->payment($user, $course);
+                $expires = $transaction->getExpires();
+                $response->setStatusCode(Response::HTTP_OK);
+                $content = new PayDto(true, $course->getType(), $expires ?: null);
+            } catch (\Exception $exception) {
+                $response->setStatusCode($exception->getCode());
+                $content = [
+                    'code' => $exception->getCode(),
+                    'message' => $exception->getMessage(),
+                ];
+            }
+        }
         $content = $serializer->serialize($content, 'json');
         $response->setContent($content);
         return $response;
@@ -396,8 +420,7 @@ class CourseController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         CourseRepository $courseRepository,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $response = new JsonResponse();
         try {
             /**
@@ -555,8 +578,7 @@ class CourseController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         CourseRepository $courseRepository,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $response = new JsonResponse();
 
         try {
@@ -565,7 +587,7 @@ class CourseController extends AbstractController
              * @var CourseDto $courseDto
              */
             $courseDto = $serializer->deserialize($request->getContent(), CourseDto::class, 'json');
-            if($courseBeforeUpdate !== null) {
+            if ($courseBeforeUpdate !== null) {
                 $courseWithNewCode = $courseRepository->findOneBy(['code' =>  $courseDto->getCode()]);
                 if ($courseWithNewCode !== null && $courseDto->getCode() !== $code) {
                     $response->setStatusCode(Response::HTTP_CONFLICT);
@@ -587,7 +609,7 @@ class CourseController extends AbstractController
                 $response->setContent($content);
                 return $response;
             }
-	    $response->setStatusCode(Response::HTTP_NOT_FOUND);
+            $response->setStatusCode(Response::HTTP_NOT_FOUND);
             $content = [
                 'success' => false,
                 'message' => 'Курс с кодом «' . $code . '» не найден.',
@@ -595,7 +617,6 @@ class CourseController extends AbstractController
             $content = $serializer->serialize($content, 'json');
             $response->setContent($content);
             return $response;
-            
         } catch (\Exception $exception) {
             $response->setStatusCode(Response::HTTP_BAD_REQUEST);
             $content = [
@@ -607,5 +628,4 @@ class CourseController extends AbstractController
             return $response;
         }
     }
-
 }

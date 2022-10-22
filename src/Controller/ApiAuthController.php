@@ -33,8 +33,7 @@ class ApiAuthController extends AbstractController
     public function __construct(
         ValidatorInterface $validator,
         UserPasswordHasherInterface $userPasswordHasher
-    )
-    {
+    ) {
         $this->validator = $validator;
         $this->serializer = SerializerBuilder::create()->build();
         $this->userPasswordHasher = $userPasswordHasher;
@@ -215,8 +214,7 @@ class ApiAuthController extends AbstractController
         JWTTokenManagerInterface $JWTTokenManager,
         RefreshTokenGeneratorInterface $refreshTokenGenerator,
         RefreshTokenManagerInterface $refreshTokenManager
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $userDto = $this->serializer->deserialize($request->getContent(), UserDto::class, 'json');
 
         $errors = $this->validator->validate($userDto);
