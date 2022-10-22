@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Dto\UserDto;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Service\PaymentService;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
@@ -205,6 +207,7 @@ class ApiAuthController extends AbstractController
      *     ),
      * )
      * @OA\Tag(name="Пользователь")
+     * @throws Exception
      */
     #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(
@@ -213,7 +216,8 @@ class ApiAuthController extends AbstractController
         EntityManagerInterface $entityManager,
         JWTTokenManagerInterface $JWTTokenManager,
         RefreshTokenGeneratorInterface $refreshTokenGenerator,
-        RefreshTokenManagerInterface $refreshTokenManager
+        RefreshTokenManagerInterface $refreshTokenManager,
+        PaymentService $paymentService
     ): JsonResponse {
         $userDto = $this->serializer->deserialize($request->getContent(), UserDto::class, 'json');
 
@@ -244,6 +248,8 @@ class ApiAuthController extends AbstractController
         ));
 
         $userRepository->save($user, true);
+
+        $paymentService->deposit($user, $_ENV['START_AMOUNT']);
 
         $refreshToken = $refreshTokenGenerator->createForUserWithTtl(
             $user,
