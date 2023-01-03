@@ -30,8 +30,7 @@ class PaymentReportCommand extends Command
         TransactionRepository $transactionRepository,
         MailerInterface       $mailer,
         string                $name = null
-    )
-    {
+    ) {
         $this->twig = $twig;
         $this->transactionRepository = $transactionRepository;
         $this->mailer = $mailer;

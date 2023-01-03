@@ -56,7 +56,7 @@ class TransactionFixtures extends Fixture implements OrderedFixtureInterface
             [
                 'type' => 1,
                 'amount' => $rentedCourses[0]->getPrice(),
-                'expires' => new \DateTimeImmutable('2022-09-27 00:00:00'),
+                'expires' => new \DateTimeImmutable('2024-09-27 00:00:00'),
                 'course' => $rentedCourses[0],
                 'customer' => $user,
                 'created' => new \DateTimeImmutable('2022-09-20 00:00:00'),
