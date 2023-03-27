@@ -6,6 +6,9 @@ COMPOSER=$(PHP) composer
 up:
 	@${COMPOSE} up -d
 
+upb:
+	@${COMPOSE} up --build -d
+
 down:
 	@${COMPOSE} down
 
@@ -20,6 +23,9 @@ migrate:
 
 fixtload:
 	@${CONSOLE} doctrine:fixtures:load
+
+phpunit:
+	@${PHP} bin/phpunit --testdox
 
 # В файл local.mk можно добавлять дополнительные make-команды,
 # которые требуются лично вам, но не нужны на проекте в целом

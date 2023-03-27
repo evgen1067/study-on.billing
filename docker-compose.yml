@@ -1,6 +1,8 @@
 version: "3.1"
+
 volumes:
   postgres: ~
+
 services:
   nginx:
     image: nginx:alpine
@@ -13,6 +15,7 @@ services:
       - "${NGINX_PORT}:80"
     links:
       - php
+
   postgres:
     ports:
       - "127.0.0.1:6002:5432"
@@ -22,6 +25,7 @@ services:
     environment:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
   php:
     build: docker/images/php
     working_dir: /app
