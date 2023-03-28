@@ -5,7 +5,7 @@ namespace App\DTO;
 use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserRegisterDTO
+class UserRequestDTO
 {
     #[Serializer\Type('string')]
     #[Assert\Email(message: 'Email {{ value }} не является валидным.')]

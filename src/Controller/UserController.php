@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\DTO\UserRegisterDTO;
+use App\DTO\UserRequestDTO;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
@@ -277,7 +277,7 @@ class UserController extends AbstractController
         RefreshTokenGeneratorInterface $refreshTokenGenerator,
         RefreshTokenManagerInterface $refreshTokenManager,
     ): JsonResponse {
-        $dto = $this->serializer->deserialize($req->getContent(), UserRegisterDTO::class, 'json');
+        $dto = $this->serializer->deserialize($req->getContent(), UserRequestDTO::class, 'json');
         $errs = $this->validator->validate($dto);
 
         if (count($errs) > 0) {
