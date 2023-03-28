@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\DTO\UserRegisterDTO;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -41,8 +43,8 @@ class UserController extends AbstractController
     /**
      * @OA\Post(
      *     path="/api/v1/auth",
-     *     summary="Аутентификация пользователя и получение JWT-токена",
-     *     description="Аутентификация пользователя и получение JWT-токена"
+     *     summary="Аутентификация пользователя и получение JWT, Refresh токенов",
+     *     description="Аутентификация пользователя и получение JWT, Refresh токенов"
      * )
      * @OA\RequestBody(
      *     required=true,
@@ -63,10 +65,14 @@ class UserController extends AbstractController
      *)
      * @OA\Response(
      *     response=200,
-     *     description="Аутентификация пользователя и получение JWT-токена",
+     *     description="Аутентификация пользователя и получение JWT, Refresh токенов",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="refresh_token",
      *          type="string",
      *        ),
      *     )
@@ -103,9 +109,76 @@ class UserController extends AbstractController
      * )
      * @OA\Tag(name="User")
      */
-    public function auth(): JsonResponse
+    public function auth()
     {
-        // get jwt token
+    }
+
+    #[Route('/token/refresh', name: 'api_refresh_token', methods: ['POST'])]
+    /**
+     * @OA\Post(
+     *     path="/api/v1/token/refresh",
+     *     summary="Обновление истекших токенов",
+     *     description="Обновление истекших токенов"
+     * )
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="refresh_token",
+     *          type="string",
+     *          description="refresh токено пользователя",
+     *          example="refresh_token",
+     *        ),
+     *     )
+     *)
+     * @OA\Response(
+     *     response=200,
+     *     description="Обновление истекших токенов",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="refresh_token",
+     *          type="string",
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Ошибка аутентификации",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *          example="401"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *          example="Invalid credentials."
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response="default",
+     *     description="Неизвестная ошибка",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string"
+     *        ),
+     *     )
+     * )
+     * @OA\Tag(name="User")
+     */
+    public function refresh()
+    {
     }
 
     #[Route('/register', name: 'api_register', methods: ['POST'])]
@@ -139,6 +212,10 @@ class UserController extends AbstractController
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="refresh_token",
      *          type="string",
      *        ),
      *        @OA\Property(
@@ -196,7 +273,9 @@ class UserController extends AbstractController
     public function register(
         Request $req,
         UserRepository $repo,
-        JWTTokenManagerInterface $jwtManager
+        JWTTokenManagerInterface $jwtManager,
+        RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        RefreshTokenManagerInterface $refreshTokenManager,
     ): JsonResponse {
         $dto = $this->serializer->deserialize($req->getContent(), UserRegisterDTO::class, 'json');
         $errs = $this->validator->validate($dto);
@@ -223,8 +302,16 @@ class UserController extends AbstractController
             $this->hasher->hashPassword($user, $user->getPassword())
         );
         $repo->save($user, true);
+
+        $refreshToken = $refreshTokenGenerator->createForUserWithTtl(
+            $user,
+            (new \DateTime())->modify('+1 month')->getTimestamp()
+        );
+        $refreshTokenManager->save($refreshToken);
+
         return new JsonResponse([
             'token' => $jwtManager->create($user),
+            'refresh_token' => $refreshToken->getRefreshToken(),
             'roles' => $user->getRoles(),
         ], Response::HTTP_CREATED);
     }
