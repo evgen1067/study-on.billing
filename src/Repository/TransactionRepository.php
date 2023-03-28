@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Transaction;
 use App\Entity\User;
+use Cassandra\Date;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -39,6 +40,48 @@ class TransactionRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    public function findExpiredTransactions()
+    {
+        $start = new DateTimeImmutable();
+        $end = $start->modify('+1 day');
+
+        $entityManager = $this->getEntityManager();
+
+        $q = 'SELECT c.title AS title,
+                       t.expires AS expires
+                FROM App\Entity\Transaction t,
+                     App\Entity\Course c
+                WHERE (c.type = 3 OR c.type = 1)
+                  AND t.course = c.id
+                  AND t.expires BETWEEN :start AND :end';
+
+        return $entityManager->createQuery($q)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getResult();
+    }
+
+    public function findTransactionsInLastMonth(DateTimeImmutable $start, DateTimeImmutable $end)
+    {
+        $entityManager = $this->getEntityManager();
+
+        $q = 'SELECT c.title AS title,
+                     c.type AS type,
+                     count(t.id) AS count,
+                     sum(t.amount) AS total
+              FROM App\Entity\Transaction t,
+                     App\Entity\Course c
+              WHERE (c.type = 3 OR c.type = 1)
+                  AND t.course = c.id
+                  AND t.created BETWEEN :start AND :end
+              GROUP BY c.title, c.type';
+
+        return $entityManager->createQuery($q)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getResult();
     }
 
     public function findUserTransactionsWithFilters(User $user, array $filters): array

@@ -1,0 +1,45 @@
+{% extends 'email/email.html.twig' %}
+
+{% block title %}
+    Отчет об оплаченных курсах за период {{ date.start|date('d.m.Y') }} - {{ date.end|date('d.m.Y') }}.
+{% endblock %}
+
+{% block body %}
+    <style>
+        .text-center {
+            text-align: center;
+        }
+        .border {
+            border: 1px solid #1f1f1f;
+        }
+    </style>
+    <table class="border">
+        <thead>
+        <tr class="border">
+            <th class="border text-center">Название курса<br></th>
+            <th class="border text-center">Тип курса<br></th>
+            <th class="border text-center">Число аренд/покупок<br></th>
+            <th class="border text-center">Общая сумма<br></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for t in transactions %}
+            <tr class="border">
+                <td class="border text-center">{{ t.title }}</td>
+                <td class="border text-center">
+                    {% if t.type == 1 %}
+                        {{ 'Аренда' }}
+                    {% else %}
+                        {{ 'Покупка' }}
+                    {% endif %}
+                </td>
+                <td class="border text-center">{{ t.count }}</td>
+                <td class="border text-center">{{ t.total }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h5>
+        Итого: {{ total }}.
+    </h5>
+{% endblock %}
