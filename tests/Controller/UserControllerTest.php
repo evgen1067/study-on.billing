@@ -157,12 +157,12 @@ class UserControllerTest extends AbstractTest
 
         $errors = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertNotEmpty($errors['error']);
-        self::assertNotEmpty($errors['error']['username']);
-        self::assertNotEmpty($errors['error']['password']);
+        self::assertNotEmpty($errors['errors']);
+        self::assertNotEmpty($errors['errors']['username']);
+        self::assertNotEmpty($errors['errors']['password']);
 
-        self::assertEquals('Email "test" не является валидным.', $errors['error']['username']);
-        self::assertEquals('Пароль должен содержать минимум 6 символов.', $errors['error']['password']);
+        self::assertEquals('Email "test" не является валидным.', $errors['errors']['username']);
+        self::assertEquals('Пароль должен содержать минимум 6 символов.', $errors['errors']['password']);
     }
 
     /**
@@ -189,12 +189,12 @@ class UserControllerTest extends AbstractTest
 
         $errors = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertNotEmpty($errors['error']);
-        self::assertNotEmpty($errors['error']['username']);
-        self::assertNotEmpty($errors['error']['password']);
+        self::assertNotEmpty($errors['errors']);
+        self::assertNotEmpty($errors['errors']['username']);
+        self::assertNotEmpty($errors['errors']['password']);
 
-        self::assertEquals('Email не может быть пуст.', $errors['error']['username']);
-        self::assertEquals('Пароль не может быть пуст.', $errors['error']['password']);
+        self::assertEquals('Email не может быть пуст.', $errors['errors']['username']);
+        self::assertEquals('Пароль не может быть пуст.', $errors['errors']['password']);
     }
 
     /**
@@ -221,9 +221,9 @@ class UserControllerTest extends AbstractTest
 
         $errors = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertNotEmpty($errors['error']);
+        self::assertNotEmpty($errors['message']);
 
-        self::assertEquals('Email уже используется.', $errors['error']);
+        self::assertEquals('Email уже используется.', $errors['message']);
     }
 
     /**

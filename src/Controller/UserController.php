@@ -206,11 +206,17 @@ class UserController extends AbstractController
             foreach ($errs as $error) {
                 $jsonErrors[$error->getPropertyPath()] = $error->getMessage();
             }
-            return new JsonResponse(['error' => $jsonErrors], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'code' => Response::HTTP_BAD_REQUEST,
+                'errors' => $jsonErrors
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         if ($repo->findOneBy(['email' => $dto->username])) {
-            return new JsonResponse(['error' => 'Email уже используется.'], Response::HTTP_CONFLICT);
+            return new JsonResponse([
+                'code' => Response::HTTP_CONFLICT,
+                'message' => 'Email уже используется.'
+            ], Response::HTTP_CONFLICT);
         }
         $user = User::fromDTO($dto);
         $user->setPassword(
@@ -292,7 +298,10 @@ class UserController extends AbstractController
             $user = $this->getUser();
 
             if (!$user) {
-                return new JsonResponse(['error' => 'Пользователь не авторизован.'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse([
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                    'message' => 'Пользователь не авторизован.'
+                ], Response::HTTP_UNAUTHORIZED);
             }
 
             return new JsonResponse([
@@ -316,9 +325,15 @@ class UserController extends AbstractController
                     'balance' => $user->getBalance(),
                 ], Response::HTTP_OK);
             }
-            return new JsonResponse(['error' => 'Пользователь с таким email не найден.'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse([
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'Пользователь с таким email не найден.'
+            ], Response::HTTP_UNAUTHORIZED);
         } catch (\JsonException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse([
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => $e->getMessage()
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 }
