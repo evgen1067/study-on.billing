@@ -298,6 +298,49 @@ class CourseControllerTest extends AbstractTest
         self::assertEquals(false, $response['success']);
     }
 
+    public function testCreateCourseWithRoleUser()
+    {
+        $user = [
+            'username' => 'user@study-on.ru',
+            'password' => 'password',
+        ];
+
+        $token = $this->getToken($user);
+
+        $data = [
+            'type' => 'free',
+            'title' => 'API Course',
+            'code' => 'PHP-1',
+            'price' => 0,
+        ];
+
+        $client = self::getClient();
+        $client->request(
+            'POST',
+            $this->coursesApiUrl,
+            $data,
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            ],
+            $this->serializer->serialize($data, 'json'),
+        );
+
+        $this->assertResponseCode(Response::HTTP_FORBIDDEN, $client->getResponse());
+
+        self::assertTrue($client->getResponse()->headers->contains(
+            'Content-Type',
+            'application/json'
+        ));
+
+        $response = $this->serializer->deserialize($client->getResponse()->getContent(), 'array', 'json');
+
+        self::assertNotEmpty($response['code']);
+        self::assertEquals(403, $response['code']);
+        self::assertEquals('Access Denied.', $response['message']);
+    }
+
     public function testEditCourseIsSuccessful()
     {
         $user = [
@@ -384,5 +427,50 @@ class CourseControllerTest extends AbstractTest
 
         self::assertIsBool($response['success']);
         self::assertEquals(false, $response['success']);
+    }
+
+    public function testEditCourseWithRoleUser()
+    {
+        $user = [
+            'username' => 'user@study-on.ru',
+            'password' => 'password',
+        ];
+
+        $token = $this->getToken($user);
+
+        $data = [
+            'type' => 'free',
+            'title' => 'API Course',
+            'code' => 'JS-1',
+            'price' => 0,
+        ];
+
+        $courseCode = '/PHP-1';
+
+        $client = self::getClient();
+        $client->request(
+            'POST',
+            $this->coursesApiUrl . $courseCode . '/edit',
+            $data,
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            ],
+            $this->serializer->serialize($data, 'json'),
+        );
+
+        $this->assertResponseCode(Response::HTTP_FORBIDDEN, $client->getResponse());
+
+        self::assertTrue($client->getResponse()->headers->contains(
+            'Content-Type',
+            'application/json'
+        ));
+
+        $response = $this->serializer->deserialize($client->getResponse()->getContent(), 'array', 'json');
+
+        self::assertNotEmpty($response['code']);
+        self::assertEquals(403, $response['code']);
+        self::assertEquals('Access Denied.', $response['message']);
     }
 }
