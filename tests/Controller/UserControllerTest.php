@@ -2,8 +2,13 @@
 
 namespace App\Tests\Controller;
 
+use App\DataFixtures\CoursesFixtures;
+use App\DataFixtures\TransactionsFixtures;
 use App\DataFixtures\UsersFixtures;
+use App\Service\PaymentService;
 use App\Tests\AbstractTest;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use JMS\Serializer\Serializer;
 use JsonException;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,9 +32,16 @@ class UserControllerTest extends AbstractTest
 
     protected function getFixtures(): array
     {
-        return [new UsersFixtures(
-            self::getContainer()->get(UserPasswordHasherInterface::class),
-        )];
+        return [
+            new UsersFixtures(
+                self::getContainer()->get(UserPasswordHasherInterface::class),
+                self::getContainer()->get(RefreshTokenGeneratorInterface::class),
+                self::getContainer()->get(RefreshTokenManagerInterface::class),
+                self::getContainer()->get(PaymentService::class),
+            ),
+            new CoursesFixtures(),
+            new TransactionsFixtures(),
+        ];
     }
 
     /**
@@ -62,6 +74,7 @@ class UserControllerTest extends AbstractTest
         $data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertNotEmpty($data['token']);
+        self::assertNotEmpty($data['refresh_token']);
     }
 
     /**
@@ -127,6 +140,7 @@ class UserControllerTest extends AbstractTest
         $data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertNotEmpty($data['token']);
+        self::assertNotEmpty($data['refresh_token']);
         self::assertNotEmpty($data['roles']);
 
 

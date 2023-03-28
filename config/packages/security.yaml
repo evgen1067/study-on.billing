@@ -47,6 +47,10 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/v1/(auth|register|doc|token/refresh), roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1/courses, methods: [ POST ], roles: ROLE_SUPER_ADMIN }
+        - { path: ^/api/v1/courses/\w+/edit$, methods: [ POST ], roles: ROLE_SUPER_ADMIN }
+        - { path: ^/api/v1/courses, methods: [ GET ], roles: PUBLIC_ACCESS}
+        - { path: ^/api/v1/courses/\w*$, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1, roles: IS_AUTHENTICATED_FULLY }
 
 

@@ -84,7 +84,7 @@ class CourseController extends AbstractController
             $content[] = new CourseDTO($course);
         }
         return new JsonResponse(
-            $serializer->serialize($content, 'json'),
+            $content,
             Response::HTTP_OK
         );
     }
@@ -192,37 +192,31 @@ class CourseController extends AbstractController
         CourseRepository $repo,
     ): JsonResponse {
         $dto = $serializer->deserialize($request->getContent(), CourseDto::class, 'json');
-        $courseDB = $repo->findOneBy(['code' => $dto->getCode()]);
+        $courseDB = $repo->findOneBy(['code' => $dto->code]);
 
         /**
          * @var User $user
          */
         $user = $this->getUser();
         if (is_null($user)) {
-            return new JsonResponse(
-                $serializer->serialize(
-                    [
-                        'code' => Response::HTTP_UNAUTHORIZED,
-                        'message' => 'Вы не авторизованы!',
-                    ],
-                    'json'
-                ),
-                Response::HTTP_UNAUTHORIZED
-            );
+            return new JsonResponse([
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'Вы не авторизованы!',
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         if (!is_null($courseDB)) {
-            return new JsonResponse($serializer->serialize([
+            return new JsonResponse([
                 'code' => Response::HTTP_CONFLICT,
                 'success' => false,
                 'message' => 'Курс с таким кодом уже существует.'
-            ], 'json'), Response::HTTP_CONFLICT);
+            ], Response::HTTP_CONFLICT);
         }
         $course = Course::fromDTO($dto);
         $repo->save($course, true);
-        return new JsonResponse($serializer->serialize([
+        return new JsonResponse([
             'success' => true,
-        ], 'json'), Response::HTTP_CREATED);
+        ], Response::HTTP_CREATED);
     }
 
     #[Route('/{code}', name: 'app_course_course', methods: ['GET'])]
@@ -304,7 +298,7 @@ class CourseController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
         return new JsonResponse(
-            $serializer->serialize((new CourseDTO($course)), 'json'),
+            (new CourseDTO($course)),
             Response::HTTP_OK
         );
     }
@@ -422,39 +416,24 @@ class CourseController extends AbstractController
         $user = $this->getUser();
 
         if (!$user) {
-            return new JsonResponse(
-                $serializer->serialize(
-                    [
-                        'code' => Response::HTTP_UNAUTHORIZED,
-                        'message' => 'Вы не авторизованы!',
-                    ],
-                    'json'
-                ),
-                Response::HTTP_UNAUTHORIZED
-            );
+            return new JsonResponse([
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                    'message' => 'Вы не авторизованы!',
+                ], Response::HTTP_UNAUTHORIZED);
         }
 
         try {
             $transaction = $paymentService->payment($user, $course);
             $expires = $transaction->getExpires();
             return new JsonResponse(
-                $serializer->serialize(
-                    new PayResponseDTO(true, $course->getType(), $expires ?: null),
-                    'json'
-                ),
+                new PayResponseDTO(true, $course->getType(), $expires ?: null),
                 Response::HTTP_OK
             );
         } catch (\Exception $exception) {
-            return new JsonResponse(
-                $serializer->serialize(
-                    [
-                        'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                        'message' => $exception->getMessage()
-                    ],
-                    'json'
-                ),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
+            return new JsonResponse([
+                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => $exception->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -584,16 +563,10 @@ class CourseController extends AbstractController
          */
         $user = $this->getUser();
         if (is_null($user)) {
-            return new JsonResponse(
-                $serializer->serialize(
-                    [
-                        'code' => Response::HTTP_UNAUTHORIZED,
-                        'message' => 'Вы не авторизованы!',
-                    ],
-                    'json'
-                ),
-                Response::HTTP_UNAUTHORIZED
-            );
+            return new JsonResponse([
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'Вы не авторизованы!',
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         if (is_null($courseDB)) {
@@ -609,19 +582,19 @@ class CourseController extends AbstractController
         if ($dto->code !== $code) {
             $courseDTOCodeDB = $repo->findOneBy(['code' => $dto->code]);
             if (!is_null($courseDTOCodeDB)) {
-                return new JsonResponse($serializer->serialize([
+                return new JsonResponse([
                     'code' => Response::HTTP_CONFLICT,
                     'success' => false,
                     'message' => 'Курс с таким кодом уже существует.'
-                ], 'json'), Response::HTTP_CONFLICT);
+                ], Response::HTTP_CONFLICT);
             }
         }
 
         $courseDB->updateFromDTO($dto);
         $repo->save($courseDB, true);
 
-        return new JsonResponse($serializer->serialize([
+        return new JsonResponse([
             'success' => true,
-        ], 'json'), Response::HTTP_OK);
+        ], Response::HTTP_OK);
     }
 }

@@ -54,7 +54,7 @@ abstract class AbstractTest extends WebTestCase
                         $add = ' FORMATTED';
                     }
                 }
-                $title = '[' . $response->getStatusCode() . ']' . $add . ' - ' . $content;
+                $title = '['.$response->getStatusCode().']'.$add.' - '.$content;
             } else {
                 $title = $crawler->filter('title')->text();
             }
@@ -140,7 +140,7 @@ abstract class AbstractTest extends WebTestCase
 
     private function failOnResponseStatusCheck(
         Response $response = null,
-        $func = null,
+                 $func = null,
         ?string $message = null,
         string $type = 'text/html'
     ) {
@@ -166,7 +166,7 @@ abstract class AbstractTest extends WebTestCase
 
         $err = $this->guessErrorMessageFromResponse($response, $type);
         if ($message) {
-            $message = rtrim($message, '.') . '. ';
+            $message = rtrim($message, '.').'. ';
         }
 
         if (is_int($func)) {
@@ -180,10 +180,10 @@ abstract class AbstractTest extends WebTestCase
 
         $max_length = 100;
         if (mb_strlen($err, 'utf-8') < $max_length) {
-            $message .= ' ' . $this->makeErrorOneLine($err);
+            $message .= ' '.$this->makeErrorOneLine($err);
         } else {
-            $message .= ' ' . $this->makeErrorOneLine(mb_substr($err, 0, $max_length, 'utf-8') . '...');
-            $message .= "\n\n" . $err;
+            $message .= ' '.$this->makeErrorOneLine(mb_substr($err, 0, $max_length, 'utf-8').'...');
+            $message .= "\n\n".$err;
         }
 
         $this->fail($message);

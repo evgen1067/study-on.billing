@@ -95,13 +95,12 @@ class TransactionController extends AbstractController
      */
     public function index(
         Request $request,
-        TransactionRepository $repo,
-        SerializerInterface $serializer
+        TransactionRepository $repo
     ): JsonResponse {
         $filters = [];
         # тип транзакции payment|deposit
         $filters['type'] =
-            $request->query->get('type') ? Transaction::OPERATION_TYPE[$request->query->get('type')] : null;
+            $request->query->get('type') ? Transaction::REVERSE_OPERATION_TYPE[$request->query->get('type')] : null;
         # символьный код курса
         $filters['course_code'] = $request->query->get('course_code');
         # флаг, позволяющий отбросить записи с датой expires_at в прошлом (т.е. оплаты аренд, которые уже истекли).
@@ -113,16 +112,10 @@ class TransactionController extends AbstractController
         $user = $this->getUser();
 
         if (is_null($user)) {
-            return new JsonResponse(
-                $serializer->serialize(
-                    [
-                        'code' => Response::HTTP_UNAUTHORIZED,
-                        'message' => 'Вы не авторизованы!',
-                    ],
-                    'json'
-                ),
-                Response::HTTP_UNAUTHORIZED
-            );
+            return new JsonResponse([
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'Вы не авторизованы!',
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         $transactions = $repo->findUserTransactionsWithFilters($user, $filters);
@@ -138,6 +131,6 @@ class TransactionController extends AbstractController
             );
             $content[] = $transactionDto;
         }
-        return new JsonResponse($serializer->serialize($content, 'json'), Response::HTTP_OK);
+        return new JsonResponse($content, Response::HTTP_OK);
     }
 }

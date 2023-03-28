@@ -38,7 +38,7 @@ class Transaction
         2 => 'deposit'
     ];
 
-    private const REVERSE_OPERATION_TYPE = [
+    public const REVERSE_OPERATION_TYPE = [
         'payment' => 1,
         'deposit' => 2,
     ];
