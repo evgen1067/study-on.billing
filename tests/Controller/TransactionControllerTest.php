@@ -142,7 +142,7 @@ class TransactionControllerTest extends AbstractTest
         ));
 
         $response = $this->serializer->deserialize($client->getResponse()->getContent(), 'array', 'json');
-        self::assertCount(2, $response);
+        self::assertCount(1, $response);
     }
 
 }

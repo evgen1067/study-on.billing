@@ -37,15 +37,13 @@ class PaymentService
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $transaction = new Transaction();
-            $transaction->setCustomer($user);
-            $transaction->setType(self::DEPOSIT_TYPE);
-            $transaction->setAmount($amount);
+            $transaction
+                ->setCustomer($user)
+                ->setType(self::DEPOSIT_TYPE)
+                ->setAmount($amount)
+                ->setCreated(new DateTimeImmutable());
             $user->setBalance($user->getBalance() + $amount);
-
-            $transaction->setCreated(new DateTimeImmutable());
-
             $this->transactionRepository->save($transaction, true);
-
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
@@ -64,22 +62,18 @@ class PaymentService
                 throw new \RuntimeException('На счету недостаточно средств.', Response::HTTP_NOT_ACCEPTABLE);
             }
             $transaction = new Transaction();
-
-            $transaction->setCustomer($user);
-            $transaction->setType(self::PAYMENT_TYPE);
-            $transaction->setAmount($course->getPrice());
-            $transaction->setCourse($course);
+            $transaction
+                ->setCustomer($user)
+                ->setType(self::PAYMENT_TYPE)
+                ->setAmount($course->getPrice())
+                ->setCourse($course)
+                ->setCreated(new DateTimeImmutable());
 
             if ($course->getType() === 'rent') {
                 $transaction->setExpires((new DateTimeImmutable())->add(new DateInterval('P1W'))); // one week
             }
-
-            $transaction->setCreated(new DateTimeImmutable());
-
             $user->setBalance($user->getBalance() - $course->getPrice());
-
             $this->transactionRepository->save($transaction, true);
-
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();

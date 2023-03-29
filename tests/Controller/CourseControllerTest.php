@@ -57,8 +57,12 @@ class CourseControllerTest extends AbstractTest
             [ 'CONTENT_TYPE' => 'application/json' ],
             $this->serializer->serialize($user, 'json')
         );
-
-        return json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['token'];
+        return json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        )['token'];
     }
 
     /**

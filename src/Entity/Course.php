@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\DTO\CourseDTO;
+use App\DTO\Request\CourseRequestDTO;
 use App\Repository\CourseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -44,7 +44,7 @@ class Course
         'buy' => 3,
     ];
 
-    public static function fromDTO(CourseDTO $dto)
+    public static function fromDTO(CourseRequestDTO $dto): self
     {
         $course = new self();
 
@@ -57,7 +57,7 @@ class Course
         return $course;
     }
 
-    public function updateFromDTO(CourseDTO $dto)
+    public function updateFromDTO(CourseRequestDTO $dto): self
     {
         $this
             ->setPrice($dto->price)

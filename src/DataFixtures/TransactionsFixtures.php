@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Course;
 use App\Entity\Transaction;
 use App\Entity\User;
+use DateInterval;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
@@ -29,13 +30,13 @@ class TransactionsFixtures extends Fixture implements OrderedFixtureInterface
                 'type' => 2,
                 'amount' => 200,
                 'customer' => $user,
-                'created' => new DateTimeImmutable('2021-09-01 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P3Y')),
             ],
             [
                 'type' => 2,
                 'amount' => 2000,
                 'customer' => $admin,
-                'created' => new DateTimeImmutable('2021-10-01 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P3Y')),
             ],
             // buy
             [
@@ -43,64 +44,64 @@ class TransactionsFixtures extends Fixture implements OrderedFixtureInterface
                 'amount' => $boughtCourses[0]->getPrice(),
                 'course' => $boughtCourses[0],
                 'customer' => $user,
-                'created' => new DateTimeImmutable('2022-10-08 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P1Y3M6D')),
             ],
             [
                 'type' => 1,
                 'amount' => $boughtCourses[1]->getPrice(),
                 'course' => $boughtCourses[1],
                 'customer' => $admin,
-                'created' => new DateTimeImmutable('2022-10-10 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P1Y1M2D')),
             ],
             // rent - expires
             [
                 'type' => 1,
                 'amount' => $rentedCourses[0]->getPrice(),
-                'expires' => new \DateTimeImmutable('2024-09-27 00:00:00'),
+                'expires' => (new DateTimeImmutable())->sub(new DateInterval('P1Y3M6D')),
                 'course' => $rentedCourses[0],
                 'customer' => $user,
-                'created' => new \DateTimeImmutable('2022-09-20 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P1Y3M13D')),
             ],
             [
                 'type' => 1,
                 'amount' => $rentedCourses[0]->getPrice(),
-                'expires' => new \DateTimeImmutable('2022-10-17 00:00:00'),
+                'expires' => (new DateTimeImmutable())->sub(new DateInterval('P2Y3M6D')),
                 'course' => $rentedCourses[0],
                 'customer' => $admin,
-                'created' => new \DateTimeImmutable('2022-10-10 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P2Y3M13D')),
             ],
             [
                 'type' => 1,
                 'amount' => $rentedCourses[1]->getPrice(),
-                'expires' => new \DateTimeImmutable('2022-09-17 00:00:00'),
+                'expires' => (new DateTimeImmutable())->sub(new DateInterval('P2Y3M6D')),
                 'course' => $rentedCourses[1],
                 'customer' => $user,
-                'created' => new \DateTimeImmutable('2022-09-10 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P2Y3M13D')),
             ],
             [
                 'type' => 1,
                 'amount' => $rentedCourses[1]->getPrice(),
-                'expires' => new \DateTimeImmutable('2023-04-01 00:00:00'),
+                'expires' => (new DateTimeImmutable())->sub(new DateInterval('P1Y3M6D')),
                 'course' => $rentedCourses[1],
                 'customer' => $admin,
-                'created' => new \DateTimeImmutable('2023-03-20 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P1Y3M13D')),
             ],
             // rent
             [
                 'type' => 1,
                 'amount' => $rentedCourses[0]->getPrice(),
-                'expires' => new \DateTimeImmutable('2023-04-02 00:00:00'),
+                'expires' => (new DateTimeImmutable())->add(new DateInterval('P15D')),
                 'course' => $rentedCourses[0],
                 'customer' => $user,
-                'created' => new \DateTimeImmutable('2023-03-24 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P12D')),
             ],
             [
                 'type' => 1,
                 'amount' => $rentedCourses[1]->getPrice(),
-                'expires' => new \DateTimeImmutable('2023-03-29 00:00:00'),
+                'expires' => (new DateTimeImmutable())->add(new DateInterval('P16D')),
                 'course' => $rentedCourses[1],
                 'customer' => $admin,
-                'created' => new \DateTimeImmutable('2023-03-28 00:00:00'),
+                'created' => (new DateTimeImmutable())->sub(new DateInterval('P12D')),
             ],
         ];
 

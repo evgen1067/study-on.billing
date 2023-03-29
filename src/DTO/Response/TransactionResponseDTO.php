@@ -1,7 +1,8 @@
 <?php
 
-namespace App\DTO;
+namespace App\DTO\Response;
 
+use App\Entity\Transaction;
 use DateTimeImmutable;
 use JMS\Serializer\Annotation as Serializer;
 
@@ -25,13 +26,13 @@ class TransactionResponseDTO
     #[Serializer\Type("DateTimeImmutable"), Serializer\SkipWhenEmpty]
     public ?DateTimeImmutable $expires;
 
-    public function __construct($id, $created, $type, $courseCode, $amount, $expires)
+    public function __construct(Transaction $t)
     {
-        $this->id = $id;
-        $this->created = $created;
-        $this->type = $type;
-        $this->amount = $amount;
-        $this->expires = $expires ?? null;
-        $this->course_code = $courseCode;
+        $this->id = $t->getId();
+        $this->created = $t->getCreated();
+        $this->type = $t->getType();
+        $this->amount = $t->getAmount();
+        $this->expires = $t->getExpires();
+        $this->course_code = $t->getCourse()?->getCode();
     }
 }

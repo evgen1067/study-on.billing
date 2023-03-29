@@ -1,11 +1,11 @@
 <?php
 
-namespace App\DTO;
+namespace App\DTO\Request;
 
 use App\Entity\Course;
 use JMS\Serializer\Annotation as Serializer;
 
-class CourseDTO
+class CourseRequestDTO
 {
     #[Serializer\Type("string")]
     public string $code;
@@ -28,5 +28,4 @@ class CourseDTO
             $this->title = $course->getTitle();
         }
     }
-
 }

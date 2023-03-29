@@ -2,11 +2,10 @@
 
 namespace App\Controller;
 
-use App\DTO\TransactionResponseDTO;
+use App\DTO\Response\TransactionResponseDTO;
 use App\Entity\Transaction;
 use App\Entity\User;
 use App\Repository\TransactionRepository;
-use JMS\Serializer\SerializerInterface;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -121,15 +120,7 @@ class TransactionController extends AbstractController
         $transactions = $repo->findUserTransactionsWithFilters($user, $filters);
         $content = [];
         foreach ($transactions as $transaction) {
-            $transactionDto = new TransactionResponseDTO(
-                $transaction->getId(),
-                $transaction->getCreated(),
-                $transaction->getType(),
-                $transaction->getCourse()?->getCode(),
-                $transaction->getAmount(),
-                $transaction->getExpires()
-            );
-            $content[] = $transactionDto;
+            $content[] = new TransactionResponseDTO($transaction);
         }
         return new JsonResponse($content, Response::HTTP_OK);
     }

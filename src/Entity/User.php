@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\DTO\UserRequestDTO;
+use App\DTO\Request\UserRequestDTO;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

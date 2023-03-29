@@ -2,8 +2,9 @@
 
 namespace App\Controller;
 
-use App\DTO\CourseDTO;
-use App\DTO\PayResponseDTO;
+use App\DTO\Request\CourseRequestDTO;
+use App\DTO\Response\CourseResponseDTO;
+use App\DTO\Response\PayResponseDTO;
 use App\Entity\Course;
 use App\Entity\User;
 use App\Repository\CourseRepository;
@@ -11,7 +12,6 @@ use App\Service\PaymentService;
 use JMS\Serializer\SerializerInterface;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
-use PHPUnit\Util\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,12 +79,12 @@ class CourseController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse {
         $courses = $repo->findAll();
-        $content = [];
+        $response = [];
         foreach ($courses as $course) {
-            $content[] = new CourseDTO($course);
+            $response[] = new CourseResponseDTO($course);
         }
         return new JsonResponse(
-            $content,
+            $response,
             Response::HTTP_OK
         );
     }
@@ -191,7 +191,7 @@ class CourseController extends AbstractController
         SerializerInterface $serializer,
         CourseRepository $repo,
     ): JsonResponse {
-        $dto = $serializer->deserialize($request->getContent(), CourseDto::class, 'json');
+        $dto = $serializer->deserialize($request->getContent(), CourseRequestDTO::class, 'json');
         $courseDB = $repo->findOneBy(['code' => $dto->code]);
 
         /**
@@ -298,7 +298,7 @@ class CourseController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
         return new JsonResponse(
-            (new CourseDTO($course)),
+            (new CourseResponseDTO($course)),
             Response::HTTP_OK
         );
     }
@@ -425,10 +425,11 @@ class CourseController extends AbstractController
         try {
             $transaction = $paymentService->payment($user, $course);
             $expires = $transaction->getExpires();
-            return new JsonResponse(
-                new PayResponseDTO(true, $course->getType(), $expires ?: null),
-                Response::HTTP_OK
-            );
+            return new JsonResponse(new PayResponseDTO(
+                true,
+                $course->getType(),
+                $expires ?: null
+            ), Response::HTTP_OK);
         } catch (\Exception $exception) {
             return new JsonResponse([
                 'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -577,7 +578,7 @@ class CourseController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $dto = $serializer->deserialize($request->getContent(), CourseDto::class, 'json');
+        $dto = $serializer->deserialize($request->getContent(), CourseRequestDTO::class, 'json');
 
         if ($dto->code !== $code) {
             $courseDTOCodeDB = $repo->findOneBy(['code' => $dto->code]);

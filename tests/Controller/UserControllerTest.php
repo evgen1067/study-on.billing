@@ -24,6 +24,16 @@ class UserControllerTest extends AbstractTest
 
     private string $currentApiUrl = '/api/v1/users/current';
 
+    private array $adminCredentials = [
+        'username' => 'admin@study-on.ru',
+        'password' => 'password',
+    ];
+
+    private array $userCredentials = [
+        'username' => 'user@study-on.ru',
+        'password' => 'password',
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -49,10 +59,25 @@ class UserControllerTest extends AbstractTest
      */
     public function testAuthorizationWithValidCredentials(): void
     {
-        $user = [
-            'username' => 'user@study-on.ru',
-            'password' => 'password',
-        ];
+        $client = self::getClient();
+        $client->request(
+            'POST',
+            $this->authApiUrl,
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($this->userCredentials, 'json')
+        );
+
+        $this->assertResponseCode(Response::HTTP_OK, $client->getResponse());
+        self::assertTrue($client->getResponse()->headers->contains(
+            'Content-Type',
+            'application/json'
+        ));
+        $data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertNotEmpty($data['token']);
+        self::assertNotEmpty($data['refresh_token']);
 
         $client = self::getClient();
         $client->request(
@@ -61,16 +86,14 @@ class UserControllerTest extends AbstractTest
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            $this->serializer->serialize($user, 'json')
+            $this->serializer->serialize($this->adminCredentials, 'json')
         );
 
         $this->assertResponseCode(Response::HTTP_OK, $client->getResponse());
-
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
         ));
-
         $data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertNotEmpty($data['token']);
@@ -216,11 +239,6 @@ class UserControllerTest extends AbstractTest
      */
     public function testRegisterWithAlreadyUsedEmail(): void
     {
-        $user = [
-            'username' => 'user@study-on.ru',
-            'password' => 'password',
-        ];
-
         $client = self::getClient();
         $client->request(
             'POST',
@@ -228,15 +246,12 @@ class UserControllerTest extends AbstractTest
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            $this->serializer->serialize($user, 'json')
+            $this->serializer->serialize($this->userCredentials, 'json')
         );
 
         $this->assertResponseCode(Response::HTTP_CONFLICT, $client->getResponse());
-
         $errors = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-
         self::assertNotEmpty($errors['message']);
-
         self::assertEquals('Email уже используется.', $errors['message']);
     }
 
@@ -265,12 +280,7 @@ class UserControllerTest extends AbstractTest
 
     public function testGetCurrentUserIsSuccessful(): void
     {
-        $user = [
-            'username' => 'user@study-on.ru',
-            'password' => 'password',
-        ];
-
-        $token = $this->getToken($user);
+        $token = $this->getToken($this->userCredentials);
 
         $client = self::getClient();
         $client->request(
